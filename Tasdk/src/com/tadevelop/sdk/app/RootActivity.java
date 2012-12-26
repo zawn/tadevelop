@@ -1,5 +1,5 @@
 /*
- * Name   ActivityTask.java
+ * Name   RootActivity.java
  * Author Zawn
  * Created on 2012-10-22, 上午11:57:58
  *
@@ -29,7 +29,7 @@ import android.util.Log;
  * <pre>
  * {@code
  *  <activity
- * 	 android:name="com.tadevelop.sdk.app.ActivityTask"
+ * 	 android:name="com.tadevelop.sdk.app.RootActivity"
  * 	 android:theme="@android:style/Theme.NoDisplay" >
  * 	 <intent-filter>
  * 		 <action android:name="android.intent.action.MAIN" />
@@ -56,7 +56,7 @@ import android.util.Log;
  * <pre>
  * {@code
  *  <activity
- * 	 android:name="com.tadevelop.sdk.app.ActivityTask"
+ * 	 android:name="com.tadevelop.sdk.app.RootActivity"
  * 	 android:theme="@android:style/Theme.NoDisplay" >
  * 	 <intent-filter>
  * 		 <action android:name="android.intent.action.MAIN" />
@@ -76,9 +76,9 @@ import android.util.Log;
  * 
  * @author Zawn
  */
-final public class ActivityTask extends Activity {
+final public class RootActivity extends Activity {
 
-	private static final String TAG = "ActivityTask.java";
+	private static final String TAG = "RootActivity.java";
 	private static final boolean DEBUG = true;
 
 	public static final String DEFAULT_LAUNCH_ACTIVITY 	= ".intent.action.MAIN";			// intent 动作名, 默认的需要启动的Activity
@@ -95,25 +95,25 @@ final public class ActivityTask extends Activity {
 
 	private void onHandleIntent(final Intent intent) {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.onHandleIntent() TaskId:" + this.getTaskId());
+			Log.i(TAG, "RootActivity.onHandleIntent() TaskId:" + this.getTaskId());
 		final Class<?> cls = (Class<?>) intent.getSerializableExtra(CURRENT_LAUNCH_ACTIVITY);
 		final Bundle bundle = (Bundle) intent.getBundleExtra(BUNDLE_DATA);
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.Target class is : " + ((cls == null) ? "null" : cls.getName()));
+			Log.i(TAG, "RootActivity.Target class is : " + ((cls == null) ? "null" : cls.getName()));
 		final Intent i;
 		if (cls == null) {
 			if (DEBUG)
-				Log.i(TAG, "ActivityTask.Start the default activity : " + mDefaultLaunchInent.getComponent());
+				Log.i(TAG, "RootActivity.Start the default activity : " + mDefaultLaunchInent.getComponent());
 			i = mDefaultLaunchInent.cloneFilter();
 			if (bundle != null) {
 				i.putExtras(bundle);
 			}
 			startActivity(i);
 		} else {
-			if (cls.isInstance(ActivityTask.this)) {
+			if (cls.isInstance(RootActivity.this)) {
 				if ((Intent.FLAG_ACTIVITY_CLEAR_TOP & intent.getFlags()) == 0) {
 					throw new RuntimeException(
-							"ActivityTask is the root of this task.  If you want to exit this task, add Intent.FLAG_ACTIVITY_CLEAR_TOP flag in intent.");
+							"RootActivity is the root of this task.  If you want to exit this task, add Intent.FLAG_ACTIVITY_CLEAR_TOP flag in intent.");
 				}
 				initiativeDestroy();
 			} else {
@@ -129,10 +129,10 @@ final public class ActivityTask extends Activity {
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.onCreate() TaskId:" + this.getTaskId());
+			Log.i(TAG, "RootActivity.onCreate() TaskId:" + this.getTaskId());
 		super.onCreate(savedInstanceState);
 		if (!isTaskRoot()) {
-			Log.e(TAG, "ActivityTask is not the root of this task. Please confirm the code correctly");
+			Log.e(TAG, "RootActivity is not the root of this task. Please confirm the code correctly");
 			finish();
 		}
 
@@ -157,11 +157,11 @@ final public class ActivityTask extends Activity {
 	final protected void onDestroy() {
 		super.onDestroy();
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.onDestroy()");
+			Log.i(TAG, "RootActivity.onDestroy()");
 		if (mInitiativeDestroy) {
 			mInitiativeDestroy = false;
 			if (DEBUG)
-				Log.i(TAG, "ActivityTask.java Terminate this instance");
+				Log.i(TAG, "RootActivity.java Terminate this instance");
 			android.os.Process.killProcess(android.os.Process.myPid());
 			// 接下来的所有逻辑将不会被执行,有可能包括上一个Activity的onStop和onDestroy方法
 		}
@@ -170,7 +170,7 @@ final public class ActivityTask extends Activity {
 	@Override
 	final protected void onNewIntent(final Intent intent) {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.onNewIntent()");
+			Log.i(TAG, "RootActivity.onNewIntent()");
 		mIsNewIntent = true;
 		setIntent(intent);
 		onHandleIntent(intent);
@@ -180,7 +180,7 @@ final public class ActivityTask extends Activity {
 	final protected void onResume() {
 		super.onResume();
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.onResume()");
+			Log.i(TAG, "RootActivity.onResume()");
 		if (mIsNewIntent) {
 			// 置位,等待下一次NewIntent的到来.
 			if (DEBUG)
@@ -198,7 +198,7 @@ final public class ActivityTask extends Activity {
 	@Override
 	final protected void onSaveInstanceState(Bundle outState) {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.onSaveInstanceState()");
+			Log.i(TAG, "RootActivity.onSaveInstanceState()");
 		outState.putParcelable(ORIGINAL_INTENT, getIntent());
 		outState.putParcelable(DEFAULT_LAUNCH_INTENT, mDefaultLaunchInent);
 		super.onSaveInstanceState(outState);
@@ -209,33 +209,33 @@ final public class ActivityTask extends Activity {
 	 */
 	private void initiativeDestroy() {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.initiativeDestroy()");
+			Log.i(TAG, "RootActivity.initiativeDestroy()");
 		mInitiativeDestroy = true;
 		finish();
 	}
 
 	/**
 	 * 用于切换程序逻辑分支的便利方法,执行该方法后会销毁在Back Stack中除 <br>
-	 * {@link ActivityTask} 以外的所有{@link Activity} ,并启动方法参数 <code>cls </code>指定的 {@link Activity}<br>
+	 * {@link RootActivity} 以外的所有{@link Activity} ,并启动方法参数 <code>cls </code>指定的 {@link Activity}<br>
 	 * <br>
-	 * 注:如果cls指定的{@link Activity}是{@link ActivityTask}本身,因为{@link ActivityTask}是不可见的此<br>
-	 * 时{@link ActivityTask}将自我销毁,程序退出.
+	 * 注:如果cls指定的{@link Activity}是{@link RootActivity}本身,因为{@link RootActivity}是不可见的此<br>
+	 * 时{@link RootActivity}将自我销毁,程序退出.
 	 * 
 	 * @param packageContext A Context of the application package implementing this class.
 	 * @param cls The component class that is to be used for the intent.
 	 */
 	public static void switchActivity(Activity activity, Class<?> cls) {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.switchActivity(), cls = " + cls.getName());
+			Log.i(TAG, "RootActivity.switchActivity(), cls = " + cls.getName());
 		switchActivity(activity, cls, null);
 	}
 
 	/**
 	 * 用于切换程序逻辑分支的便利方法,执行该方法后会销毁在Back Stack中除 <br>
-	 * {@link ActivityTask} 以外的所有{@link Activity} ,并启动方法参数 <code>cls </code>指定的 {@link Activity}<br>
+	 * {@link RootActivity} 以外的所有{@link Activity} ,并启动方法参数 <code>cls </code>指定的 {@link Activity}<br>
 	 * <br>
-	 * 注:如果cls指定的{@link Activity}是{@link ActivityTask}本身,因为{@link ActivityTask}是不可见的此<br>
-	 * 时{@link ActivityTask}将自我销毁,程序退出.
+	 * 注:如果cls指定的{@link Activity}是{@link RootActivity}本身,因为{@link RootActivity}是不可见的此<br>
+	 * 时{@link RootActivity}将自我销毁,程序退出.
 	 * 
 	 * @param packageContext A Context of the application package implementing this class.
 	 * @param cls The component class that is to be used for the intent,If NUll default components will be started
@@ -243,9 +243,9 @@ final public class ActivityTask extends Activity {
 	 */
 	public static void switchActivity(Activity activity, Class<?> cls, Bundle bundle) {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.switchActivity(), cls = " + cls.getName() + ", bundle = "
+			Log.i(TAG, "RootActivity.switchActivity(), cls = " + cls.getName() + ", bundle = "
 					+ (bundle == null ? "null" : bundle.toString()));
-		Intent intent = new Intent(activity, ActivityTask.class);
+		Intent intent = new Intent(activity, RootActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
 		intent.putExtra(CURRENT_LAUNCH_ACTIVITY, cls);
 		intent.putExtra(BUNDLE_DATA, bundle);
@@ -259,10 +259,10 @@ final public class ActivityTask extends Activity {
 	 */
 	public static void exitTask(Context context) {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.exitTask()");
-		Intent intent = new Intent(context, ActivityTask.class);
+			Log.i(TAG, "RootActivity.exitTask()");
+		Intent intent = new Intent(context, RootActivity.class);
 		intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		intent.putExtra(CURRENT_LAUNCH_ACTIVITY, ActivityTask.class);
+		intent.putExtra(CURRENT_LAUNCH_ACTIVITY, RootActivity.class);
 		context.startActivity(intent);
 	}
 
@@ -273,7 +273,7 @@ final public class ActivityTask extends Activity {
 	 */
 	public static void reStart(Activity activity) {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.reStart()");
+			Log.i(TAG, "RootActivity.reStart()");
 		switchActivity(activity, null);
 	}
 
@@ -282,7 +282,7 @@ final public class ActivityTask extends Activity {
 	 */
 	private Intent getDefaultLaunchIntent() {
 		if (DEBUG)
-			Log.i(TAG, "ActivityTask.getDefaultLaunchIntent()");
+			Log.i(TAG, "RootActivity.getDefaultLaunchIntent()");
 		mDefaultLaunchActivity = this.getPackageName() + DEFAULT_LAUNCH_ACTIVITY;
 		String activityName = null;
 		Intent intent = new Intent(getIntent());		
@@ -311,7 +311,7 @@ final public class ActivityTask extends Activity {
 			intent.setClassName(getApplicationContext(), activityName);
 		} else {
 			throw new RuntimeException(
-					"ActivityTask did not find the default to launch Activity, make sure you provide the name of the class is correct and complete");
+					"RootActivity did not find the default to launch Activity, make sure you provide the name of the class is correct and complete");
 		}
 		if (DEBUG) 
 			Log.i(TAG, intent.toString());
