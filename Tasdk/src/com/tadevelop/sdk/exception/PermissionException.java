@@ -15,7 +15,6 @@ package com.tadevelop.sdk.exception;
 public class PermissionException extends Exception {
 
 	private static final long serialVersionUID = -2238149245515210412L;
-	private static final String TAG = "PermissionException.java";
 
 	/**
 	 * 
