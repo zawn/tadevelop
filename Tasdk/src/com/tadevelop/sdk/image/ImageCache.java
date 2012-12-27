@@ -135,7 +135,7 @@ public class ImageCache {
                  */
                 @Override
                 protected int sizeOf(String key, Bitmap bitmap) {
-                    return getBitmapSize(bitmap);
+                    return Utils.getBitmapSize(bitmap);
                 }
             };
         }
@@ -163,7 +163,7 @@ public class ImageCache {
                     if (!diskCacheDir.exists()) {
                         diskCacheDir.mkdirs();
                     }
-                    if (getUsableSpace(diskCacheDir) > mCacheParams.diskCacheSize) {
+                    if (Utils.getUsableSpace(diskCacheDir) > mCacheParams.diskCacheSize) {
                         try {
                             mDiskLruCache = DiskLruCache.open(
                                     diskCacheDir, 1, 1, mCacheParams.diskCacheSize);
@@ -374,11 +374,11 @@ public class ImageCache {
         public boolean memoryCacheEnabled = DEFAULT_MEM_CACHE_ENABLED;
         public boolean diskCacheEnabled = DEFAULT_DISK_CACHE_ENABLED;
         public boolean clearDiskCacheOnStart = DEFAULT_CLEAR_DISK_CACHE_ON_START;
-        public boolean initDiskCacheOnCreate = DEFAULT_INIT_DISK_CACHE_ON_CREATE;
+		public boolean initDiskCacheOnCreate = DEFAULT_INIT_DISK_CACHE_ON_CREATE;
 
-        public ImageCacheParams(Context context, String uniqueName) {
-            diskCacheDir = getDiskCacheDir(context, uniqueName);
-        }
+		public ImageCacheParams(Context context, String uniqueName) {
+			diskCacheDir = Utils.getDiskCacheDir(context, uniqueName);
+		}
 
         public ImageCacheParams(File diskCacheDir) {
             this.diskCacheDir = diskCacheDir;
@@ -411,24 +411,6 @@ public class ImageCache {
     }
 
     /**
-     * Get a usable cache directory (external if available, internal otherwise).
-     *
-     * @param context The context to use
-     * @param uniqueName A unique directory name to append to the cache dir
-     * @return The cache dir
-     */
-    public static File getDiskCacheDir(Context context, String uniqueName) {
-        // Check if media is mounted or storage is built-in, if so, try and use external cache dir
-        // otherwise use internal cache dir
-        final String cachePath =
-                Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState()) ||
-                        !isExternalStorageRemovable() ? getExternalCacheDir(context).getPath() :
-                                context.getCacheDir().getPath();
-
-        return new File(cachePath + File.separator + uniqueName);
-    }
-
-    /**
      * A hashing method that changes a string (like a URL) into a hash suitable for using as a
      * disk filename.
      */
@@ -457,65 +439,6 @@ public class ImageCache {
         return sb.toString();
     }
 
-    /**
-     * Get the size in bytes of a bitmap.
-     * @param bitmap
-     * @return size in bytes
-     */
-    @TargetApi(12)
-    public static int getBitmapSize(Bitmap bitmap) {
-        if (Utils.hasHoneycombMR1()) {
-            return bitmap.getByteCount();
-        }
-        // Pre HC-MR1
-        return bitmap.getRowBytes() * bitmap.getHeight();
-    }
-
-    /**
-     * Check if external storage is built-in or removable.
-     *
-     * @return True if external storage is removable (like an SD card), false
-     *         otherwise.
-     */
-    @TargetApi(9)
-    public static boolean isExternalStorageRemovable() {
-        if (Utils.hasGingerbread()) {
-            return Environment.isExternalStorageRemovable();
-        }
-        return true;
-    }
-
-    /**
-     * Get the external app cache directory.
-     *
-     * @param context The context to use
-     * @return The external cache dir
-     */
-    @TargetApi(8)
-    public static File getExternalCacheDir(Context context) {
-        if (Utils.hasFroyo()) {
-            return context.getExternalCacheDir();
-        }
-
-        // Before Froyo we need to construct the external cache dir ourselves
-        final String cacheDir = "/Android/data/" + context.getPackageName() + "/cache/";
-        return new File(Environment.getExternalStorageDirectory().getPath() + cacheDir);
-    }
-
-    /**
-     * Check how much usable space is available at a given path.
-     *
-     * @param path The path to check
-     * @return The space available in bytes
-     */
-    @TargetApi(9)
-    public static long getUsableSpace(File path) {
-        if (Utils.hasGingerbread()) {
-            return path.getUsableSpace();
-        }
-        final StatFs stats = new StatFs(path.getPath());
-        return (long) stats.getBlockSize() * (long) stats.getAvailableBlocks();
-    }
 
     /**
      * Locate an existing instance of this Fragment or if not found, create and

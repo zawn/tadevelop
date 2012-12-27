@@ -37,6 +37,7 @@ import android.widget.Toast;
 import com.tadevelop.sdk.BuildConfig;
 import com.tadevelop.sdk.R;
 import com.tadevelop.sdk.io.DiskLruCache;
+import com.tadevelop.sdk.util.Utils;
 
 /**
  * A simple subclass of {@link ImageResizer} that fetches and resizes images fetched from a URL.
@@ -78,7 +79,7 @@ public class ImageFetcher extends ImageResizer {
 
     private void init(Context context) {
         checkConnection(context);
-        mHttpCacheDir = ImageCache.getDiskCacheDir(context, HTTP_CACHE_DIR);
+        mHttpCacheDir = Utils.getDiskCacheDir(context, HTTP_CACHE_DIR);
     }
 
     @Override
@@ -92,7 +93,7 @@ public class ImageFetcher extends ImageResizer {
             mHttpCacheDir.mkdirs();
         }
         synchronized (mHttpDiskCacheLock) {
-            if (ImageCache.getUsableSpace(mHttpCacheDir) > HTTP_CACHE_SIZE) {
+            if (Utils.getUsableSpace(mHttpCacheDir) > HTTP_CACHE_SIZE) {
                 try {
                     mHttpDiskCache = DiskLruCache.open(mHttpCacheDir, 1, 1, HTTP_CACHE_SIZE);
                     if (BuildConfig.DEBUG) {

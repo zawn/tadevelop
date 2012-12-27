@@ -160,10 +160,10 @@ public class Utils {
 	 */
 	@TargetApi(12)
 	public static int getBitmapSize(Bitmap bitmap) {
-		if (Utils.hasHoneycombMR1()) {
-			return bitmap.getByteCount();
-		}
-		// Pre HC-MR1
+		// if (Utils.hasHoneycombMR1()) {
+		// return bitmap.getByteCount();
+		// }
+		// // Pre HC-MR1
 		return bitmap.getRowBytes() * bitmap.getHeight();
 	}
 
