@@ -17,6 +17,7 @@ import android.util.Log;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpMethods;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -89,6 +90,8 @@ public class HttpGoogleTest extends ActivityInstrumentationTestCase2<MainActivit
 				try {
 					HttpRequest httpRequest = httpRequestFactory.buildRequest(HttpMethods.GET, url, null);
 					httpRequest.setParser(parser);
+					HttpHeaders headers = null;
+					httpRequest.setHeaders(headers);
 					HttpResponse httpResponse = httpRequest.execute();
 					ActivityFeed feed = httpResponse.parseAs(ActivityFeed.class);
 					Log.i(TAG, "HttpGoogleTest.GoogleHttpTest.run(): " + i);
