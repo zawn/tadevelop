@@ -9,7 +9,15 @@
 package com.tadevelop.sdk;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.KeyStore;
 import java.util.List;
+
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManagerFactory;
 
 import android.os.Debug;
 import android.test.ActivityInstrumentationTestCase2;
@@ -17,7 +25,6 @@ import android.util.Log;
 
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.http.GenericUrl;
-import com.google.api.client.http.HttpHeaders;
 import com.google.api.client.http.HttpMethods;
 import com.google.api.client.http.HttpRequest;
 import com.google.api.client.http.HttpRequestFactory;
@@ -26,7 +33,6 @@ import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.GenericJson;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
-import com.google.api.client.json.gson.GsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.Key;
 
@@ -62,7 +68,7 @@ public class HttpGoogleTest extends ActivityInstrumentationTestCase2<MainActivit
 	 * {@link com.tadevelop.sdk.MainActivity#onStart()} 的测试方法。
 	 */
 	public void testHttp() {
-		Debug.startMethodTracing("HttpGoogle");
+		Debug.startMethodTracing("HttpParseDataBind-03",100*1024*1024);
 		Thread thread = new Thread(new GoogleHttpTest(), "GoogleHttpGsonTest");
 		thread.start();
 		synchronized (blockLock) {
@@ -83,15 +89,13 @@ public class HttpGoogleTest extends ActivityInstrumentationTestCase2<MainActivit
 		public void run() {
 			HttpTransport httpTransport = AndroidHttp.newCompatibleTransport();
 			HttpRequestFactory httpRequestFactory = httpTransport.createRequestFactory();
-			mJsonFactory = new GsonFactory();
+			mJsonFactory = new JacksonFactory();
 			for (int i = 0; i < 100; i++) {
-				GenericUrl url = new GenericUrl("http://192.168.1.2:8099/rest/Test/get");
+				GenericUrl url = new GenericUrl("http://192.168.1.2:8099/TestAgent/rest/Test/get");
 				JsonObjectParser parser = new JsonObjectParser(mJsonFactory);
 				try {
 					HttpRequest httpRequest = httpRequestFactory.buildRequest(HttpMethods.GET, url, null);
 					httpRequest.setParser(parser);
-					HttpHeaders headers = null;
-					httpRequest.setHeaders(headers);
 					HttpResponse httpResponse = httpRequest.execute();
 					ActivityFeed feed = httpResponse.parseAs(ActivityFeed.class);
 					Log.i(TAG, "HttpGoogleTest.GoogleHttpTest.run(): " + i);
@@ -176,18 +180,18 @@ public class HttpGoogleTest extends ActivityInstrumentationTestCase2<MainActivit
 			System.out.println("No activities found.");
 		} else {
 			System.out.println("activities found.");
-			// if (feed.getActivities().size() == MAX_RESULTS) {
-			// System.out.print("First ");
-			// }
-			// System.out.println(feed.getActivities().size() + " activities found:");
-			// for (Activity activity : feed.getActivities()) {
-			// System.out.println();
-			// System.out.println("-----------------------------------------------");
-			// System.out.println("HTML Content: " + activity.getActivityObject().getContent());
-			// System.out.println("+1's: " + activity.getActivityObject().getPlusOners().getTotalItems());
-			// System.out.println("URL: " + activity.getUrl());
-			// System.out.println("ID: " + activity.get("id"));
-			// }
+			if (feed.getActivities().size() == MAX_RESULTS) {
+				System.out.print("First ");
+			}
+			System.out.println(feed.getActivities().size() + " activities found:");
+			for (Activity activity : feed.getActivities()) {
+				System.out.println();
+				System.out.println("-----------------------------------------------");
+				System.out.println("HTML Content: " + activity.getActivityObject().getContent());
+				System.out.println("+1's: " + activity.getActivityObject().getPlusOners().getTotalItems());
+				System.out.println("URL: " + activity.getUrl());
+				System.out.println("ID: " + activity.get("id"));
+			}
 		}
 	}
 
