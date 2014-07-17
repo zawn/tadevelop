@@ -21,7 +21,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.LinkedList.Link;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -44,6 +47,7 @@ import android.widget.Filterable;
  *    3.添加{@link #getList()}用于返回包含当前与Adapter关联的内容.
  *    4.在构造函数{@link #ArrayAdapter(Context, int, Object[])}中添加初始化空数组的支持.
  *    5.添加双向队列支持,{@link #addFirst(Object)},{@link #addLast(Object)}.主要用于简化下拉刷新等应用场景的数据插入操作.
+ *    6.更改字段{@link #mOriginalValues}为List<T>.
  * </pre>
  * *************************************
  * <br>
@@ -99,7 +103,7 @@ abstract public class ArrayAdapter<T> extends BaseAdapter implements Filterable 
 
     // A copy of the original mObjects array, initialized from and then used instead as soon as
     // the mFilter ArrayFilter is used. mObjects will then only contain the filtered values.
-    private ArrayList<T> mOriginalValues;
+    private List<T> mOriginalValues;
     private ArrayFilter mFilter;
 
     private LayoutInflater mInflater;
@@ -197,6 +201,20 @@ abstract public class ArrayAdapter<T> extends BaseAdapter implements Filterable 
     }
     
     
+	/**
+	 * 转换当前{@link #mObjects},{@link #mOriginalValues}为支持双端队列的List类型.
+	 */
+	private void ensureDeque() {
+		synchronized (mLock) {
+			if (mOriginalValues != null && !(mOriginalValues instanceof LinkedList<?>)) {
+				mOriginalValues = new LinkedList<T>();
+			} 
+			if (mObjects != null && !(mObjects instanceof LinkedList<?>))  {
+				mObjects = new LinkedList<T>();
+			}
+		}
+		if (mNotifyOnChange) notifyDataSetChanged();
+	}
     /**
      * Adds the specified object at the beginning of this {@code LinkedList}.
      *
@@ -209,6 +227,7 @@ abstract public class ArrayAdapter<T> extends BaseAdapter implements Filterable 
 
     private boolean addFirstImpl(T object) {
     	synchronized (mLock) {
+    		
             if (mOriginalValues != null) {
                 Collections.addAll(mOriginalValues, items);
             } else {
@@ -217,6 +236,42 @@ abstract public class ArrayAdapter<T> extends BaseAdapter implements Filterable 
         }
         if (mNotifyOnChange) notifyDataSetChanged();
         return true;
+    }
+    
+    private boolean addLastImpl(E object) {
+        Link<E> oldLast = voidLink.previous;
+        Link<E> newLink = new Link<E>(object, oldLast, voidLink);
+        voidLink.previous = newLink;
+        oldLast.next = newLink;
+        size++;
+        modCount++;
+        return true;
+    }
+    
+    private E removeFirstImpl() {
+        Link<E> first = voidLink.next;
+        if (first != voidLink) {
+            Link<E> next = first.next;
+            voidLink.next = next;
+            next.previous = voidLink;
+            size--;
+            modCount++;
+            return first.data;
+        }
+        throw new NoSuchElementException();
+    }
+    
+    private E removeLastImpl() {
+        Link<E> last = voidLink.previous;
+        if (last != voidLink) {
+            Link<E> previous = last.previous;
+            voidLink.previous = previous;
+            previous.next = voidLink;
+            size--;
+            modCount++;
+            return last.data;
+        }
+        throw new NoSuchElementException();
     }
 
     /**
