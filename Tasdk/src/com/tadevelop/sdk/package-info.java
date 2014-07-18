@@ -1,14 +1,10 @@
-/*
- * Name   package-info.java
- * Author Zawn
- * Created on 2012-8-31, 上午11:46:09
- *
- * Copyright (c) 2012. All rights reserved
- *
+/**
+ * File name: package-info.java
+ * Copyright: 2006-2014 House365 Inc, All rights reserved
+ * Modified : 2014年5月29日
  */
 /**
- * 基础代码包
+ * @author ZhangZhenli
  * 
- * @author Zawn
  */
 package com.tadevelop.sdk;
