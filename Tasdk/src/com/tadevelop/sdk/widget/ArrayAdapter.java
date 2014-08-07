@@ -23,8 +23,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.LinkedList.Link;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -200,88 +198,148 @@ abstract public class ArrayAdapter<T> extends BaseAdapter implements Filterable 
         if (mNotifyOnChange) notifyDataSetChanged();
     }
     
-    
-	/**
-	 * 转换当前{@link #mObjects},{@link #mOriginalValues}为支持双端队列的List类型.
-	 */
-	private void ensureDeque() {
-		synchronized (mLock) {
-			if (mOriginalValues != null && !(mOriginalValues instanceof LinkedList<?>)) {
-				mOriginalValues = new LinkedList<T>();
-			} 
-			if (mObjects != null && !(mObjects instanceof LinkedList<?>))  {
-				mObjects = new LinkedList<T>();
-			}
-		}
-		if (mNotifyOnChange) notifyDataSetChanged();
-	}
     /**
-     * Adds the specified object at the beginning of this {@code LinkedList}.
+     * 转换当前{@link #mObjects},{@link #mOriginalValues}为支持双端队列的List类型.
+     */
+    private void ensureDeque() {
+        synchronized (mLock) {
+            if (mOriginalValues != null && !(mOriginalValues instanceof LinkedList<?>)) {
+                mOriginalValues = new LinkedList<T>(mOriginalValues);
+            }
+            if (mObjects != null && !(mObjects instanceof LinkedList<?>)) {
+                mObjects = new LinkedList<T>(mObjects);
+            }
+        }
+    }
+
+    /**
+     * Adds the specified object at the beginning of this {@code ArrayAdapter}.
+     *
+     * @param object
+     *            the object to add.
+     */
+    public void addFirstAll(Collection<? extends T> collection) {
+        ensureDeque();
+        synchronized (mLock) {
+            if (mOriginalValues != null) {
+                ((LinkedList<T>) mOriginalValues).addAll(0, collection);
+            } else {
+                ((LinkedList<T>) mObjects).addAll(0, collection);
+            }
+        }
+        if (mNotifyOnChange) notifyDataSetChanged();
+    }
+
+    /**
+     * Adds the specified object at the beginning of this {@code ArrayAdapter}.
+     *
+     * @param object
+     *            the object to add.
+     */
+    public void addFirstAll(T... items) {
+        ensureDeque();
+        synchronized (mLock) {
+            if (mOriginalValues != null) {
+                ((LinkedList<T>) mOriginalValues).addAll(0, Arrays.asList(items));
+            } else {
+                ((LinkedList<T>) mObjects).addAll(0, Arrays.asList(items));
+            }
+        }
+        if (mNotifyOnChange) notifyDataSetChanged();
+    }
+
+    /**
+     * Adds the specified object at the beginning of this {@code ArrayAdapter}.
      *
      * @param object
      *            the object to add.
      */
     public void addFirst(T object) {
-        addFirstImpl(object);
-    }
-
-    private boolean addFirstImpl(T object) {
-    	synchronized (mLock) {
-    		
+        ensureDeque();
+        synchronized (mLock) {
             if (mOriginalValues != null) {
-                Collections.addAll(mOriginalValues, items);
+                ((LinkedList<T>) mOriginalValues).addFirst(object);
             } else {
-                Collections.addAll(mObjects, items);
+                ((LinkedList<T>) mObjects).addFirst(object);
             }
         }
         if (mNotifyOnChange) notifyDataSetChanged();
-        return true;
     }
-    
-    private boolean addLastImpl(E object) {
-        Link<E> oldLast = voidLink.previous;
-        Link<E> newLink = new Link<E>(object, oldLast, voidLink);
-        voidLink.previous = newLink;
-        oldLast.next = newLink;
-        size++;
-        modCount++;
-        return true;
-    }
-    
-    private E removeFirstImpl() {
-        Link<E> first = voidLink.next;
-        if (first != voidLink) {
-            Link<E> next = first.next;
-            voidLink.next = next;
-            next.previous = voidLink;
-            size--;
-            modCount++;
-            return first.data;
+
+    public void addLast(T object) {
+        ensureDeque();
+        synchronized (mLock) {
+            if (mOriginalValues != null) {
+                ((LinkedList<T>) mOriginalValues).addLast(object);
+            } else {
+                ((LinkedList<T>) mObjects).addLast(object);
+            }
         }
-        throw new NoSuchElementException();
-    }
-    
-    private E removeLastImpl() {
-        Link<E> last = voidLink.previous;
-        if (last != voidLink) {
-            Link<E> previous = last.previous;
-            voidLink.previous = previous;
-            previous.next = voidLink;
-            size--;
-            modCount++;
-            return last.data;
-        }
-        throw new NoSuchElementException();
+        if (mNotifyOnChange) notifyDataSetChanged();
     }
 
     /**
-     * Adds the specified object at the end of this {@code LinkedList}.
+     * Adds the specified object at the end of this {@code ArrayAdapter}.
      *
      * @param object
      *            the object to add.
      */
-    public void addLast(T object) {
-        add(object);
+    public void addLastAll(Collection<? extends T> collection) {
+        ensureDeque();
+        synchronized (mLock) {
+            if (mOriginalValues != null) {
+                ((LinkedList<T>) mOriginalValues).addAll(mOriginalValues.size(), collection);
+            } else {
+                ((LinkedList<T>) mObjects).addAll(mObjects.size(), collection);
+            }
+        }
+        if (mNotifyOnChange) notifyDataSetChanged();
+    }
+
+    /**
+     * Adds the specified object at the end of this {@code ArrayAdapter}.
+     *
+     * @param object
+     *            the object to add.
+     */
+    public void addLastAll(T... items) {
+        ensureDeque();
+        synchronized (mLock) {
+            if (mOriginalValues != null) {
+                ((LinkedList<T>) mOriginalValues).addAll(mOriginalValues.size(), Arrays.asList(items));
+            } else {
+                ((LinkedList<T>) mObjects).addAll(mObjects.size(), Arrays.asList(items));
+            }
+        }
+        if (mNotifyOnChange) notifyDataSetChanged();
+    }
+
+    public T removeFirst() {
+        ensureDeque();
+        T removeFirst;
+        synchronized (mLock) {
+            if (mOriginalValues != null) {
+                removeFirst = ((LinkedList<T>) mOriginalValues).removeFirst();
+            } else {
+                removeFirst = ((LinkedList<T>) mObjects).removeFirst();
+            }
+        }
+        if (mNotifyOnChange) notifyDataSetChanged();
+        return removeFirst;
+    }
+
+    public T removeLast() {
+        ensureDeque();
+        T removeLast;
+        synchronized (mLock) {
+            if (mOriginalValues != null) {
+                removeLast = ((LinkedList<T>) mOriginalValues).removeLast();
+            } else {
+                removeLast = ((LinkedList<T>) mObjects).removeLast();
+            }
+        }
+        if (mNotifyOnChange) notifyDataSetChanged();
+        return removeLast;
     }
 
     /**
