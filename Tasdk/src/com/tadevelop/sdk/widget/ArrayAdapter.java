@@ -46,6 +46,8 @@ import android.widget.Filterable;
  *    4.在构造函数{@link #ArrayAdapter(Context, int, Object[])}中添加初始化空数组的支持.
  *    5.添加双向队列支持,{@link #addFirst(Object)},{@link #addLast(Object)}.主要用于简化下拉刷新等应用场景的数据插入操作.
  *    6.更改字段{@link #mOriginalValues}为List<T>.
+ *    
+ *  @author ZhangZhenli
  * </pre>
  * *************************************
  * <br>
